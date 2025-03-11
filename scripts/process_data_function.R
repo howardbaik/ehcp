@@ -9,7 +9,7 @@ convert_time <- function(x, counter){
 
 # Function to pre-process the raw tracking data
 process_data <- function(game_id, verbose = TRUE){
-  tracking_file_prefix <- "https://raw.githubusercontent.com/nfl-football-ops/Big-Data-Bowl/master/Data/tracking_gameId_"
+  tracking_file_prefix <- "https://raw.githubusercontent.com/howardbaik/Big-Data-Bowl/refs/heads/tracking-data/Data/tracking_gameId_"
   tracking_file <- paste0(tracking_file_prefix, game_id, ".csv")
   gameInfo <- raw_games %>% filter(gameId == game_id)
   if(verbose == TRUE) print(paste("Starting to process game_id =", game_id))
@@ -45,7 +45,7 @@ process_data <- function(game_id, verbose = TRUE){
   
   raw_tracking <- 
     raw_tracking %>%
-    left_join(select(plays,playId, possessionTeam), by = c("playId", "playId")) %>%
+    left_join(select(plays,playId, possessionTeam), by = "playId") %>%
     mutate(possession = case_when( (possessionTeam == team & team != "ball") ~ 1,
                                   (possessionTeam != team & team != "ball") ~ 0,
                                   (team == "ball") ~ NA_real_))
@@ -58,7 +58,7 @@ process_data <- function(game_id, verbose = TRUE){
     select(new_time, event) %>%
     distinct() %>% 
     rename(new_event = event)
-  raw_tracking <- left_join(raw_tracking, time_event, by = c("new_time", "new_time"))
+  raw_tracking <- left_join(raw_tracking, time_event, by = "new_time")
   if(verbose == TRUE) print("    Updated event field")
   # Add the ball's position to each row
   ball_position <-
@@ -71,7 +71,8 @@ process_data <- function(game_id, verbose = TRUE){
            ball_dis = dis,
            ball_dir = dir)
   
-  raw_tracking <- left_join(raw_tracking, ball_position, by = c("new_time", "new_time"))
+  raw_tracking <- left_join(raw_tracking, ball_position, by = c("new_time"))
+  
   raw_tracking <-
     raw_tracking %>%
     mutate(rel_x = x - ball_x,
@@ -82,10 +83,6 @@ process_data <- function(game_id, verbose = TRUE){
     mutate(closest_to_ball = 1*(dist_to_ball == min(dist_to_ball))) %>%
     ungroup()
   if(verbose == TRUE) print("    Computed distance to ball")
-  
-  
-  
-  
   
   tracking <- 
     raw_tracking %>%
