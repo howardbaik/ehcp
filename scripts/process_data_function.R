@@ -28,7 +28,7 @@ process_data <- function(game_id, verbose = TRUE){
     filter(time_counter <= 10) %>% # this is probably superfluous
     mutate(new_time = convert_time(time, time_counter)) # now we have fractional time! 
   if(verbose == TRUE) print("    Finished reading in raw_tracking")
-  raw_tracking <- left_join(raw_tracking, select(raw_players, "nflId", "PositionAbbr"), by = c("nflId" = "nflId"))
+  raw_tracking <- left_join(raw_tracking, select(raw_players, "nflId", "PositionAbbr"), by = "nflId")
   raw_tracking <- 
     raw_tracking %>%
     rename(Position = PositionAbbr) %>%
@@ -71,7 +71,7 @@ process_data <- function(game_id, verbose = TRUE){
            ball_dis = dis,
            ball_dir = dir)
   
-  raw_tracking <- left_join(raw_tracking, ball_position, by = c("new_time"))
+  raw_tracking <- left_join(raw_tracking, ball_position, by = "new_time")
   
   raw_tracking <-
     raw_tracking %>%
